@@ -11,8 +11,8 @@
                 <!-- Logo -->
                 <div class="text-center mb-8">
                     <div class="w-56 mx-auto mb-4">
-                        <img src="/images/logo-company.png?v=3"
-                             alt="شركة تواصل"
+                        <img src="/images/logo-company.png?v=4"
+                             alt="شركة التواصل للسياحة والسفر"
                              class="w-full object-contain" />
                     </div>
                     <p class="text-gray-400 text-sm">نظام إدارة العمليات المالية</p>
@@ -85,7 +85,7 @@
 
             <!-- Footer -->
             <p class="text-center text-gray-500 text-xs mt-6">
-                شركة تواصل © {{ new Date().getFullYear() }} — جميع الحقوق محفوظة
+                شركة التواصل للسياحة والسفر © {{ new Date().getFullYear() }} — جميع الحقوق محفوظة
             </p>
         </div>
     </div>

@@ -11,8 +11,8 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             // بيانات الشركة
-            ['key' => 'company_name_ar', 'value' => 'شركة تواصل', 'group_name' => 'company', 'type' => 'string', 'description' => 'اسم الشركة بالعربي'],
-            ['key' => 'company_name_en', 'value' => 'Tawasul Company', 'group_name' => 'company', 'type' => 'string', 'description' => 'اسم الشركة بالإنجليزي'],
+            ['key' => 'company_name_ar', 'value' => 'شركة التواصل للسياحة والسفر', 'group_name' => 'company', 'type' => 'string', 'description' => 'اسم الشركة بالعربي'],
+            ['key' => 'company_name_en', 'value' => 'Al-Tawasul Tourism & Travel', 'group_name' => 'company', 'type' => 'string', 'description' => 'اسم الشركة بالإنجليزي'],
             ['key' => 'company_phone', 'value' => '', 'group_name' => 'company', 'type' => 'string', 'description' => 'هاتف الشركة'],
             ['key' => 'company_address', 'value' => '', 'group_name' => 'company', 'type' => 'string', 'description' => 'عنوان الشركة'],
             ['key' => 'company_logo', 'value' => '', 'group_name' => 'company', 'type' => 'image', 'description' => 'شعار الشركة'],

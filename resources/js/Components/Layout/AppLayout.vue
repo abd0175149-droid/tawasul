@@ -21,7 +21,7 @@
             <div class="flex items-center justify-between border-b py-4 px-4"
                  :class="isDark ? 'border-gold-900/30' : 'border-gray-200'">
                 <div class="w-40 overflow-hidden mx-auto">
-                    <img src="/images/logo-company.png?v=3" alt="شركة تواصل" class="w-full object-contain"/>
+                    <img src="/images/logo-company.png?v=4" alt="شركة التواصل للسياحة والسفر" class="w-full object-contain"/>
                 </div>
                 <button v-if="isMobile" @click="sidebarOpen = false"
                         class="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-gray-100 transition-colors">
@@ -98,7 +98,7 @@
                     </button>
                     <h2 class="text-base sm:text-lg font-bold truncate"
                         :class="isDark ? 'text-gold-400' : 'text-gray-800'">
-                        <slot name="header">{{ $page.props.title || 'شركة تواصل' }}</slot>
+                        <slot name="header">{{ $page.props.title || 'شركة التواصل للسياحة والسفر' }}</slot>
                     </h2>
                 </div>
 

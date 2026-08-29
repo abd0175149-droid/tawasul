@@ -1,27 +1,27 @@
 # ============================================================
-# NUSKJO — Docker Compose (Production)
-# Port: 4020 → Cloudflare Tunnel → nuskjo.grade.sbs
+# TAWASUL — Docker Compose (Production)
+# Port: 4030 → Cloudflare Tunnel → tawasul.grade.sbs
 # ============================================================
 
 services:
-  nuskjo-app:
+  tawasul-app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nuskjo-app
+    container_name: tawasul-app
     restart: unless-stopped
     ports:
-      - "4020:4020"
+      - "4030:4030"
     volumes:
       # Persist storage (uploads, logs)
-      - nuskjo-storage:/var/www/html/storage
+      - tawasul-storage:/var/www/html/storage
       # Persist SQLite database
-      - nuskjo-database:/var/www/html/database
+      - tawasul-database:/var/www/html/database
     environment:
-      - APP_NAME=NUSKJO
+      - APP_NAME=TAWASUL
       - APP_ENV=production
       - APP_DEBUG=false
-      - APP_URL=https://nuskjo.grade.sbs
+      - APP_URL=https://tawasul.grade.sbs
       - APP_LOCALE=ar
       - LOG_CHANNEL=stack
       - LOG_LEVEL=error
@@ -33,14 +33,14 @@ services:
     env_file:
       - .env.production
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4020/"]
+      test: ["CMD", "curl", "-f", "http://localhost:4030/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
 volumes:
-  nuskjo-storage:
+  tawasul-storage:
     driver: local
-  nuskjo-database:
+  tawasul-database:
     driver: local

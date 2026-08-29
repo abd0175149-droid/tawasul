@@ -1,5 +1,5 @@
 # ============================================================
-# NUSUK — Production Dockerfile
+# TAWASUL — Production Dockerfile
 # Laravel 11 + Vue 3 + Inertia + SQLite
 # ============================================================
 
@@ -96,7 +96,7 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 4020
+EXPOSE 4030
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

@@ -21,7 +21,7 @@
             <div class="flex items-center justify-between border-b py-4 px-4"
                  :class="isDark ? 'border-gold-900/30' : 'border-gray-200'">
                 <div class="w-40 overflow-hidden mx-auto">
-                    <img src="/images/logo-company.png?v=3" alt="شركة نسك للسياحة والسفر" class="w-full object-contain"/>
+                    <img src="/images/logo-company.png?v=3" alt="شركة تواصل" class="w-full object-contain"/>
                 </div>
                 <button v-if="isMobile" @click="sidebarOpen = false"
                         class="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-gray-100 transition-colors">
@@ -98,7 +98,7 @@
                     </button>
                     <h2 class="text-base sm:text-lg font-bold truncate"
                         :class="isDark ? 'text-gold-400' : 'text-gray-800'">
-                        <slot name="header">{{ $page.props.title || 'شركة نسك للسياحة والسفر' }}</slot>
+                        <slot name="header">{{ $page.props.title || 'شركة تواصل' }}</slot>
                     </h2>
                 </div>
 
@@ -281,7 +281,7 @@ const sidebarNav = ref(null);
 // Save sidebar scroll before Inertia navigates away
 const removeBeforeListener = router.on('before', () => {
     if (sidebarNav.value) {
-        sessionStorage.setItem('nusuk-sidebar-scroll', String(sidebarNav.value.scrollTop));
+        sessionStorage.setItem('tawasul-sidebar-scroll', String(sidebarNav.value.scrollTop));
     }
 });
 
@@ -307,7 +307,7 @@ onMounted(() => {
     
     // Restore scroll position after DOM is ready
     nextTick(() => {
-        const saved = sessionStorage.getItem('nusuk-sidebar-scroll');
+        const saved = sessionStorage.getItem('tawasul-sidebar-scroll');
         if (sidebarNav.value && saved) {
             sidebarNav.value.scrollTop = parseInt(saved, 10);
         }
@@ -338,7 +338,7 @@ const isActive = (route) => {
 const toggleTheme = () => {
     isDark.value = !isDark.value;
     document.documentElement.classList.toggle('dark');
-    localStorage.setItem('nusuk-theme', isDark.value ? 'dark' : 'light');
+    localStorage.setItem('tawasul-theme', isDark.value ? 'dark' : 'light');
 };
 
 const menuGroups = [

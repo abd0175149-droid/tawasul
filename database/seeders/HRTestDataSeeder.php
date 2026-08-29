@@ -52,7 +52,7 @@ class HRTestDataSeeder extends Seeder
             // 3. إنشاء مستخدم وموظف تجريبي — الحقول من Employee model: employee_number, user_id, department_id, shift_id, job_title, hire_date, contract_type, country, currency, basic_salary, housing_allowance, transport_allowance, other_allowance, overtime_calc_method, overtime_multiplier, is_active
             $salesRole = \App\Models\Role::firstOrCreate(['slug' => 'sales'], ['name' => 'موظف مبيعات']);
             $user1 = User::firstOrCreate(
-                ['email' => 'emp1@nusuk.test'],
+                ['email' => 'emp1@tawasul.test'],
                 [
                     'name' => 'أحمد الموظف',
                     'password' => Hash::make('password'),

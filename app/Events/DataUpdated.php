@@ -19,7 +19,7 @@ class DataUpdated implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new Channel('nusuk-updates')];
+        return [new Channel('tawasul-updates')];
     }
 
     public function broadcastAs(): string

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 NUSKJO — Starting Production Setup..."
+echo "🚀 TAWASUL — Starting Production Setup..."
 
 cd /var/www/html
 
@@ -52,7 +52,7 @@ php artisan storage:link --force 2>/dev/null || true
 # Seed chart of accounts if fresh database
 php artisan db:seed --class=ChartOfAccountsSeeder --force --no-interaction 2>/dev/null || true
 
-echo "✅ NUSKJO is ready! Listening on port 4020"
+echo "✅ TAWASUL is ready! Listening on port 4030"
 
 # Execute the main process (supervisord)
 exec "$@"

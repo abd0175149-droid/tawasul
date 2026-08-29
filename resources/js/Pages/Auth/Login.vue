@@ -12,7 +12,7 @@
                 <div class="text-center mb-8">
                     <div class="w-56 mx-auto mb-4">
                         <img src="/images/logo-company.png?v=3"
-                             alt="شركة نسك للسياحة والسفر"
+                             alt="شركة تواصل"
                              class="w-full object-contain" />
                     </div>
                     <p class="text-gray-400 text-sm">نظام إدارة العمليات المالية</p>
@@ -31,7 +31,7 @@
                             autofocus
                             dir="ltr"
                             class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all"
-                            placeholder="admin@nusuk-jo.com"
+                            placeholder="admin@tawasul-jo.com"
                         />
                         <p v-if="form.errors.email" class="mt-1 text-sm text-red-400">{{ form.errors.email }}</p>
                     </div>
@@ -85,7 +85,7 @@
 
             <!-- Footer -->
             <p class="text-center text-gray-500 text-xs mt-6">
-                شركة نسك للسياحة والسفر © {{ new Date().getFullYear() }} — جميع الحقوق محفوظة
+                شركة تواصل © {{ new Date().getFullYear() }} — جميع الحقوق محفوظة
             </p>
         </div>
     </div>

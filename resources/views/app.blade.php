@@ -4,18 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="شركة نسك للسياحة والسفر - نظام إدارة العمليات المالية والتشغيلية">
+    <meta name="description" content="شركة تواصل - نظام إدارة العمليات المالية والتشغيلية">
 
     {{-- منع وميض الثيم: يُطبّق قبل أي رسم --}}
     <script>
         (function(){
-            var t = localStorage.getItem('nusuk-theme');
+            var t = localStorage.getItem('tawasul-theme');
             if (t === 'dark') document.documentElement.classList.add('dark');
             else document.documentElement.classList.remove('dark');
         })();
     </script>
 
-    <title inertia>شركة نسك للسياحة والسفر</title>
+    <title inertia>شركة تواصل</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png">

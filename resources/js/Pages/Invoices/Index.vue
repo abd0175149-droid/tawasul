@@ -105,23 +105,27 @@
                         <div v-if="pos.items.length" style="overflow: visible;">
                             <table class="w-full text-xs">
                                 <thead><tr class="bg-gray-50 text-gray-500">
-                                    <th class="px-3 py-2 text-right w-1/5">الوكيل *</th>
-                                    <th class="px-3 py-2 text-right w-1/5">الخدمة</th>
-                                    <th class="px-3 py-2 text-center w-24">العدد</th>
-                                    <th class="px-3 py-2 text-center w-28">التكلفة JOD</th>
-                                    <th class="px-3 py-2 text-right w-1/5">البيان</th>
-                                    <th class="px-3 py-2 text-center w-24">إجمالي JOD</th>
-                                    <th class="px-3 py-2 text-center w-10"></th>
+                                    <th class="px-2 py-2 text-right w-1/6">الوكيل *</th>
+                                    <th class="px-2 py-2 text-right w-1/6">الخدمة</th>
+                                    <th class="px-2 py-2 text-center w-16">العدد</th>
+                                    <th class="px-2 py-2 text-center w-24">التكلفة JOD</th>
+                                    <th class="px-2 py-2 text-center w-24 text-blue-600">سعر البيع JOD *</th>
+                                    <th class="px-2 py-2 text-right w-1/6">البيان</th>
+                                    <th class="px-2 py-2 text-center w-24">إجمالي التكلفة</th>
+                                    <th class="px-2 py-2 text-center w-24 text-blue-600">إجمالي البيع</th>
+                                    <th class="px-2 py-2 text-center w-10"></th>
                                 </tr></thead>
                                 <tbody>
                                     <tr v-for="(item, idx) in pos.items" :key="idx" class="border-t border-gray-100">
-                                        <td class="px-3 py-2"><SearchableSelect v-model="item.agent_id" :options="agentOptions" placeholder="الوكيل" search-placeholder="ابحث..." :drop-up="idx > 2" /></td>
-                                        <td class="px-3 py-2"><SearchableSelect v-model="item.service_id" :options="serviceOptions" placeholder="اختر خدمة" search-placeholder="ابحث..." :drop-up="idx > 2" @change="onServiceSelect(idx)" /></td>
-                                        <td class="px-3 py-2"><input v-model.number="item.quantity" type="number" min="1" class="w-24 px-2 py-1.5 rounded border border-gray-200 text-xs text-center" dir="ltr"/></td>
-                                        <td class="px-3 py-2"><input v-model.number="item.unit_price_jod" type="number" step="0.001" class="w-full px-2 py-1.5 rounded border border-gray-200 text-xs font-mono text-center" dir="ltr"/></td>
-                                        <td class="px-3 py-2"><input v-model="item.statement" type="text" placeholder="بيان..." class="w-full px-2 py-1.5 rounded border border-gray-200 text-xs"/></td>
-                                        <td class="px-3 py-2 font-mono font-bold text-blue-600 text-center" dir="ltr">{{ (item.quantity * item.unit_price_jod).toFixed(3) }}</td>
-                                        <td class="px-3 py-2 text-center"><button @click="pos.items.splice(idx,1)" class="text-red-400 hover:text-red-600">✕</button></td>
+                                        <td class="px-2 py-2"><SearchableSelect v-model="item.agent_id" :options="agentOptions" placeholder="الوكيل" search-placeholder="ابحث..." :drop-up="idx > 2" /></td>
+                                        <td class="px-2 py-2"><SearchableSelect v-model="item.service_id" :options="serviceOptions" placeholder="اختر خدمة" search-placeholder="ابحث..." :drop-up="idx > 2" @change="onServiceSelect(idx)" /></td>
+                                        <td class="px-2 py-2"><input v-model.number="item.quantity" type="number" min="1" class="w-16 px-2 py-1.5 rounded border border-gray-200 text-xs text-center" dir="ltr"/></td>
+                                        <td class="px-2 py-2"><input v-model.number="item.unit_price_jod" type="number" step="0.001" min="0" class="w-full px-2 py-1.5 rounded border border-gray-200 text-xs font-mono text-center" dir="ltr"/></td>
+                                        <td class="px-2 py-2"><input v-model.number="item.sell_price_jod" type="number" step="0.001" min="0" class="w-full px-2 py-1.5 rounded border-2 text-xs font-mono font-bold text-center" :class="(item.sell_price_jod||0) > 0 ? 'border-blue-200 text-blue-700' : 'border-amber-300 bg-amber-50 text-amber-700'" dir="ltr"/></td>
+                                        <td class="px-2 py-2"><input v-model="item.statement" type="text" placeholder="بيان..." class="w-full px-2 py-1.5 rounded border border-gray-200 text-xs"/></td>
+                                        <td class="px-2 py-2 font-mono text-gray-600 text-center" dir="ltr">{{ ((item.quantity||0) * (item.unit_price_jod||0)).toFixed(3) }}</td>
+                                        <td class="px-2 py-2 font-mono font-bold text-blue-600 text-center" dir="ltr">{{ ((item.quantity||0) * (item.sell_price_jod||0)).toFixed(3) }}</td>
+                                        <td class="px-2 py-2 text-center"><button @click="pos.items.splice(idx,1)" class="text-red-400 hover:text-red-600">✕</button></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -137,14 +141,18 @@
                                 <p class="font-bold font-mono text-lg" dir="ltr">{{ totalCostJod.toFixed(3) }} JOD</p>
                             </div>
                             <div>
-                                <label class="text-gray-500">سعر البيع (JOD) *</label>
-                                <input v-model.number="pos.sell_price_jod" type="number" step="0.001" min="0" dir="ltr" class="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono font-bold text-blue-600 mt-1 focus:ring-2 focus:ring-gold-500 focus:outline-none"/>
+                                <span class="text-gray-500">إجمالي البيع:</span>
+                                <p class="font-bold font-mono text-lg text-blue-600" dir="ltr">{{ totalSellJod.toFixed(3) }} JOD</p>
+                                <span class="text-[10px] text-gray-400">مجموع أسعار بيع البنود</span>
                             </div>
                             <div>
                                 <span class="text-gray-500">الربح:</span>
                                 <p class="font-mono text-lg font-bold" :class="profitJod >= 0 ? 'text-green-600' : 'text-red-600'" dir="ltr">{{ profitJod.toFixed(3) }} JOD {{ profitJod >= 0 ? '✅' : '⚠️' }}</p>
                             </div>
                         </div>
+                        <p v-if="itemsMissingSellPrice" class="mt-3 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            ⚠️ يوجد بند بسعر بيع صفر — لن يظهر له سعر في الفاتورة المطبوعة.
+                        </p>
                     </div>
 
                     <!-- Notes + Submit -->
@@ -175,8 +183,8 @@
                 <div v-if="viewDetails?.items?.length" class="mt-4">
                     <h4 class="text-sm font-bold mb-2">البنود:</h4>
                     <table class="w-full text-xs">
-                        <thead><tr class="bg-gray-50"><th class="px-3 py-2 text-right">الوكيل</th><th class="px-3 py-2 text-right">الوصف</th><th class="px-3 py-2 text-right">العدد</th><th class="px-3 py-2 text-right">التكلفة JOD</th><th class="px-3 py-2 text-right">البيان</th></tr></thead>
-                        <tbody><tr v-for="item in viewDetails.items" :key="item.id" class="border-t"><td class="px-3 py-2">{{ item.agent?.name || '—' }}</td><td class="px-3 py-2">{{ item.description }}</td><td class="px-3 py-2 text-center">{{ item.quantity }}</td><td class="px-3 py-2 font-mono" dir="ltr">{{ Number(item.total_cost_jod||0).toFixed(3) }}</td><td class="px-3 py-2 text-gray-500">{{ item.statement || '—' }}</td></tr></tbody>
+                        <thead><tr class="bg-gray-50"><th class="px-3 py-2 text-right">الوكيل</th><th class="px-3 py-2 text-right">الوصف</th><th class="px-3 py-2 text-right">العدد</th><th class="px-3 py-2 text-right">التكلفة JOD</th><th class="px-3 py-2 text-right text-blue-600">البيع JOD</th><th class="px-3 py-2 text-right">البيان</th></tr></thead>
+                        <tbody><tr v-for="item in viewDetails.items" :key="item.id" class="border-t"><td class="px-3 py-2">{{ item.agent?.name || '—' }}</td><td class="px-3 py-2">{{ item.description }}</td><td class="px-3 py-2 text-center">{{ item.quantity }}</td><td class="px-3 py-2 font-mono" dir="ltr">{{ Number(item.total_cost_jod||0).toFixed(3) }}</td><td class="px-3 py-2 font-mono font-bold text-blue-600" dir="ltr">{{ Number(item.total_sell_jod||0).toFixed(3) }}</td><td class="px-3 py-2 text-gray-500">{{ item.statement || '—' }}</td></tr></tbody>
                     </table>
                 </div>
                 <div v-if="viewTarget.notes" class="text-sm mt-4"><span class="text-gray-400">ملاحظات:</span><p>{{ viewTarget.notes }}</p></div>
@@ -222,7 +230,6 @@ const pos = reactive({
     client_id: '',
     client_phone: '',
     trip_date: '',
-    sell_price_jod: 0,
     discount_jod: 0,
     notes: '',
     items: [],
@@ -235,7 +242,9 @@ const serviceOptions = computed(() => props.services.map(s => ({ value: s.id, la
 
 // حسابات الإجماليات
 const totalCostJod = computed(() => pos.items.reduce((s, i) => s + (i.quantity||0) * (i.unit_price_jod||0), 0));
-const profitJod = computed(() => (pos.sell_price_jod || 0) - totalCostJod.value);
+const totalSellJod = computed(() => pos.items.reduce((s, i) => s + (i.quantity||0) * (i.sell_price_jod||0), 0));
+const profitJod = computed(() => totalSellJod.value - totalCostJod.value - (pos.discount_jod || 0));
+const itemsMissingSellPrice = computed(() => pos.items.some(i => !(i.sell_price_jod > 0)));
 
 const allItemsHaveAgent = computed(() => pos.items.every(i => i.agent_id));
 
@@ -255,7 +264,6 @@ const openPOS = async (inv = null) => {
             pos.client_id = data.client_id;
             pos.client_phone = data.client_phone || '';
             pos.trip_date = data.trip_date?.split('T')[0] || '';
-            pos.sell_price_jod = parseFloat(data.total_sell_jod) || 0;
             pos.discount_jod = parseFloat(data.discount_jod) || 0;
             pos.notes = data.notes || '';
             pos.items = (data.items || []).map(item => ({
@@ -265,13 +273,13 @@ const openPOS = async (inv = null) => {
                 statement: item.statement || '',
                 quantity: item.quantity,
                 unit_price_jod: parseFloat(item.unit_price_jod) || parseFloat(item.unit_price_sar) * 0.19 || 0,
+                sell_price_jod: parseFloat(item.sell_price_jod) || 0,
             }));
         } catch (e) {
             console.error('Error loading invoice:', e);
             pos.client_id = inv.client_id || '';
             pos.client_phone = '';
             pos.trip_date = '';
-            pos.sell_price_jod = 0;
             pos.discount_jod = 0;
             pos.notes = '';
             pos.items = [];
@@ -281,7 +289,6 @@ const openPOS = async (inv = null) => {
         pos.client_id = '';
         pos.client_phone = '';
         pos.trip_date = '';
-        pos.sell_price_jod = 0;
         pos.discount_jod = 0;
         pos.notes = '';
         pos.items = [];
@@ -290,7 +297,7 @@ const openPOS = async (inv = null) => {
 };
 
 const addItem = () => {
-    pos.items.push({ agent_id: '', service_id: '', description: '', statement: '', quantity: 1, unit_price_jod: 0 });
+    pos.items.push({ agent_id: '', service_id: '', description: '', statement: '', quantity: 1, unit_price_jod: 0, sell_price_jod: 0 });
 };
 
 const onServiceSelect = (idx) => {
@@ -307,7 +314,7 @@ const submitPOS = () => {
         client_id: pos.client_id,
         client_phone: pos.client_phone || null,
         trip_date: pos.trip_date || null,
-        sell_price_jod: pos.sell_price_jod || 0,
+        sell_price_jod: totalSellJod.value, // legacy — الخادم يشتقه من البنود
         discount_jod: pos.discount_jod || 0,
         notes: pos.notes,
         items: pos.items.map(i => ({
@@ -315,7 +322,8 @@ const submitPOS = () => {
             description: i.description,
             statement: i.statement || null,
             quantity: i.quantity,
-            unit_price_jod: i.unit_price_jod,
+            unit_price_jod: i.unit_price_jod || 0,
+            sell_price_jod: i.sell_price_jod || 0,
             service_id: i.service_id || null,
         })),
     };

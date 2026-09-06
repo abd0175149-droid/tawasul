@@ -53,8 +53,6 @@
                                 <th class="col-type">نوع الخدمة</th>
                                 <th class="col-desc">وصف الخدمة</th>
                                 <th class="col-qty">الكمية</th>
-                                <th class="col-price">سعر البيع</th>
-                                <th class="col-total">الإجمالي</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,8 +61,6 @@
                                 <td>{{ item.item_type === 'service' ? 'خدمة' : 'مخالفة' }}</td>
                                 <td>{{ item.description }}</td>
                                 <td class="center mono">{{ item.quantity }}</td>
-                                <td class="mono ltr">{{ fmt(item.sell_price_jod) }}</td>
-                                <td class="mono ltr bold">{{ fmt(item.total_sell_jod) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -339,12 +335,10 @@ const doPrint = () => window.print();
 .inv-table .bold { font-weight: 700; color: #1a1715; }
 
 /* Column widths */
-.col-num { width: 5%; text-align: center; }
-.col-type { width: 13%; }
-.col-desc { width: 37%; }
-.col-qty { width: 9%; }
-.col-price { width: 18%; }
-.col-total { width: 18%; }
+.col-num { width: 6%; text-align: center; }
+.col-type { width: 18%; }
+.col-desc { width: 62%; }
+.col-qty { width: 14%; }
 
 .inv-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 7pt; color: #a09585; font-weight: 600; }
 

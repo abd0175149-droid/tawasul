@@ -222,7 +222,7 @@ const elementsByType = {
         { id: 'invoice_date', label: 'التاريخ', icon: '📅', preview: '2026/05/23', defaultFontSize: 10 },
         { id: 'status', label: 'الحالة', icon: '🏷️', preview: 'معتمدة', defaultFontSize: 10 },
         { id: 'client_name', label: 'اسم العميل', icon: '👤', preview: 'اسم العميل', defaultFontSize: 12 },
-        { id: 'items_table', label: 'جدول البنود', icon: '📊', preview: '# | الخدمة | الوصف | الكمية | السعر | الإجمالي', defaultFontSize: 9, hasWidth: true },
+        { id: 'items_table', label: 'جدول البنود', icon: '📊', preview: '# | نوع الخدمة | وصف الخدمة | الكمية', defaultFontSize: 9, hasWidth: true },
         { id: 'total', label: 'الإجمالي', icon: '💰', preview: 'الإجمالي: 000.000 JOD', defaultFontSize: 13, hasWidth: true },
         { id: 'signatures', label: 'التوقيعات', icon: '✍️', preview: 'المحاسب | المدير | العميل', defaultFontSize: 9, hasWidth: true },
     ],

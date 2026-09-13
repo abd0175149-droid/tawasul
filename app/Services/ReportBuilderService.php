@@ -80,7 +80,10 @@ class ReportBuilderService
             ->orderBy('cl.code')->get();
 
         // سندات القبض المعتمدة (لقسم الموقف المالي — جانب العميل)
+        // سندات العملاء فقط — السندات على حسابات أخرى (وكلاء/إيرادات/مصروفات)
+        // ليس لها عميل ولا تخصّ قسم "الموقف المالي — جانب العميل"
         $receipts = DB::table('receipts')->where('status', 'approved')
+            ->whereNotNull('client_id')
             ->select(DB::raw('substr(receipt_date,1,10) as d'), 'client_id as c', DB::raw('ROUND(amount_jod,2) as jod'))
             ->get();
 

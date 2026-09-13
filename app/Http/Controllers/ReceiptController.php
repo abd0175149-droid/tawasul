@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Receipt;
 use App\Models\Client;
+use App\Models\Account;
 use App\Services\NumberingService;
 use App\Services\BalanceService;
 use App\Services\AccountingService;
@@ -16,9 +17,11 @@ class ReceiptController extends Controller
     public function index(Request $request)
     {
         $receipts = Receipt::query()
-            ->with(['client:id,name,code', 'creator:id,name', 'approver:id,name'])
+            ->with(['client:id,name,code', 'account:id,code,name,type', 'creator:id,name', 'approver:id,name'])
             ->when($request->search, fn ($q, $s) => $q->where('receipt_number', 'like', "%{$s}%")
-                ->orWhereHas('client', fn ($q2) => $q2->where('name', 'like', "%{$s}%")))
+                ->orWhereHas('client', fn ($q2) => $q2->where('name', 'like', "%{$s}%"))
+                ->orWhereHas('account', fn ($q2) => $q2->where('name', 'like', "%{$s}%")
+                    ->orWhere('code', 'like', "%{$s}%")))
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->orderByDesc('created_at')
             ->paginate(15)
@@ -28,28 +31,78 @@ class ReceiptController extends Controller
             'receipts' => $receipts,
             'filters' => $request->only(['search', 'status']),
             'clients' => Client::where('is_active', true)->select('id', 'name', 'code')->get(),
+            'accounts' => self::selectableAccounts(),
         ]);
+    }
+
+    /**
+     * حسابات الشجرة القابلة للاستهداف بسند قبض:
+     * الحسابات الورقية النشطة فقط (لا حسابات تجميعية تفسد الميزان)،
+     * مستثنى منها حسابات القبض نفسها (الصندوق/البنك/الشيكات).
+     */
+    private static function selectableAccounts()
+    {
+        return Account::where('is_active', true)
+            ->whereDoesntHave('children')
+            ->whereNotIn('code', self::PAYMENT_ACCOUNT_CODES)
+            ->select('id', 'code', 'name', 'type')
+            ->orderBy('code')
+            ->get();
+    }
+
+    /** أكواد حسابات القبض — لا يجوز أن تكون الطرف الدائن */
+    private const PAYMENT_ACCOUNT_CODES = ['1101', '1102', '1103'];
+
+    /**
+     * قواعد التحقق المشتركة بين الإنشاء والتعديل.
+     */
+    private static function rules(): array
+    {
+        return [
+            'account_id' => 'required|exists:accounts,id',
+            'amount_jod' => 'required|numeric|min:0.001',
+            'payment_method' => 'required|in:cash,bank,check',
+            'bank_commission' => 'nullable|numeric|min:0',
+            'reference_number' => 'nullable|string|max:100',
+            'check_date' => 'nullable|date',
+            'bank_name' => 'nullable|string|max:100',
+            'notes' => 'nullable|string|max:1000',
+        ];
+    }
+
+    /**
+     * تطبيع المدخلات: التحقق من صلاحية الحساب، واشتقاق العميل منه
+     * حين يكون الحساب مملوكاً لعميل (للتوافق مع التقارير وكشوف الحسابات).
+     */
+    private static function normalize(array $validated): array
+    {
+        $account = Account::findOrFail($validated['account_id']);
+
+        if (in_array($account->code, self::PAYMENT_ACCOUNT_CODES, true)) {
+            abort(422, "لا يمكن إصدار سند قبض على حساب {$account->name} لأنه حساب قبض.");
+        }
+        if ($account->children()->exists()) {
+            abort(422, "لا يمكن إصدار سند قبض على حساب تجميعي ({$account->name}) — اختر حساباً فرعياً.");
+        }
+
+        // العميل يُشتق من الحساب، ويبقى فارغاً لأي حساب آخر
+        $validated['client_id'] = Client::where('account_id', $account->id)->value('id');
+
+        // العمولة فقط عند الدفع البنكي
+        $validated['bank_commission'] = $validated['payment_method'] === 'bank'
+            ? ($validated['bank_commission'] ?? 0)
+            : 0;
+
+        if ((float) $validated['bank_commission'] > (float) $validated['amount_jod']) {
+            abort(422, 'العمولة البنكية لا يمكن أن تتجاوز مبلغ السند.');
+        }
+
+        return $validated;
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'amount_jod' => 'required|numeric|min:0.001',
-            'payment_method' => 'required|in:cash,bank,check',
-            'bank_commission' => 'nullable|numeric|min:0',
-            'check_number' => 'nullable|string|max:50',
-            'check_date' => 'nullable|date',
-            'check_bank' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
-        // العمولة فقط عند الدفع البنكي
-        if ($validated['payment_method'] !== 'bank') {
-            $validated['bank_commission'] = 0;
-        } else {
-            $validated['bank_commission'] = $validated['bank_commission'] ?? 0;
-        }
+        $validated = self::normalize($request->validate(self::rules()));
 
         $validated['receipt_number'] = NumberingService::generate('REC');
         $validated['receipt_date'] = now()->toDateString();
@@ -73,12 +126,19 @@ class ReceiptController extends Controller
         try {
             DB::transaction(function () use ($receipt) {
                 $receipt->approve(auth()->user());
-                BalanceService::creditClient(
-                    $receipt->client,
-                    $receipt->amount_jod,
-                    'receipt',
-                    $receipt->id
-                );
+
+                // الرصيد المبسّط للعميل مرآة للـGL — يُحدَّث فقط لحسابات العملاء.
+                // حسابات الوكلاء وغيرها تُسجَّل بالدينار في القيد وحده (balance_sar
+                // بالريال ولا يقبل مبلغ السند، والـGL هو المرجع على أي حال).
+                if ($receipt->client) {
+                    BalanceService::creditClient(
+                        $receipt->client,
+                        $receipt->amount_jod,
+                        'receipt',
+                        $receipt->id
+                    );
+                }
+
                 // قيد محاسبي إلزامي — فشله يُلغي الاعتماد بالكامل
                 AccountingService::recordReceipt($receipt);
                 try { \App\Services\NotificationService::receiptApproved($receipt); } catch (\Exception $e) {}
@@ -115,8 +175,10 @@ class ReceiptController extends Controller
         }
 
         DB::transaction(function () use ($receipt) {
-            // عكس تسديد ذمة العميل
-            BalanceService::reverseClientCredit($receipt->client, $receipt->amount_jod, 'receipt', $receipt->id);
+            // عكس تسديد ذمة العميل — فقط إن كان السند على حساب عميل
+            if ($receipt->client) {
+                BalanceService::reverseClientCredit($receipt->client, $receipt->amount_jod, 'receipt', $receipt->id);
+            }
             // عكس القيد المحاسبي
             $entry = \App\Models\JournalEntry::where('reference_type', 'receipt')
                 ->where('reference_id', $receipt->id)->where('is_reversed', false)->first();
@@ -138,22 +200,7 @@ class ReceiptController extends Controller
             return back()->with('error', 'هذا السند ليس في وضع التعديل');
         }
 
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'amount_jod' => 'required|numeric|min:0.001',
-            'payment_method' => 'required|in:cash,bank,check',
-            'bank_commission' => 'nullable|numeric|min:0',
-            'check_number' => 'nullable|string|max:50',
-            'check_date' => 'nullable|date',
-            'check_bank' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
-        if ($validated['payment_method'] !== 'bank') {
-            $validated['bank_commission'] = 0;
-        } else {
-            $validated['bank_commission'] = $validated['bank_commission'] ?? 0;
-        }
+        $validated = self::normalize($request->validate(self::rules()));
 
         $receipt->update($validated);
         $receipt->resubmitForApproval();
@@ -172,7 +219,7 @@ class ReceiptController extends Controller
 
     public function print(Receipt $receipt)
     {
-        $receipt->load(['client:id,name,code', 'creator:id,name', 'approver:id,name']);
+        $receipt->load(['client:id,name,code,phone', 'account:id,code,name,type', 'creator:id,name', 'approver:id,name']);
 
         $template = \App\Models\Setting::where('key', 'print_template_financial')->first();
         $templateUrl = $template?->value ? \Storage::url($template->value) : null;

@@ -12,7 +12,7 @@ class Receipt extends Model
     use SoftDeletes, HasApproval;
 
     protected $fillable = [
-        'receipt_number', 'client_id', 'amount_jod', 'bank_commission',
+        'receipt_number', 'client_id', 'account_id', 'amount_jod', 'bank_commission',
         'payment_method', 'reference_number', 'receipt_date', 'bank_name',
         'check_date', 'notes', 'status', 'rejection_reason',
         'created_by', 'approved_by', 'approved_at',
@@ -32,6 +32,22 @@ class Receipt extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    /** الحساب المستهدف في شجرة الحسابات (الطرف الدائن) */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * اسم الطرف المقبوض منه — الحساب أولاً ثم العميل للسندات القديمة.
+     */
+    public function getCounterpartyNameAttribute(): string
+    {
+        return $this->account?->name
+            ?? $this->client?->name
+            ?? '—';
     }
 
     public function creator(): BelongsTo

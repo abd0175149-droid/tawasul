@@ -30,8 +30,8 @@
                 </div>
 
                 <div v-if="!isHidden('client_name')" class="field" :style="elPos('client_name')">
-                    <span class="label">العميل:</span>
-                    <span class="value client-name" :style="elFont('client_name')">{{ receipt.client?.name }}</span>
+                    <span class="label">{{ receipt.client ? 'العميل:' : 'الحساب:' }}</span>
+                    <span class="value client-name" :style="elFont('client_name')">{{ counterpartyName }}</span>
                 </div>
 
                 <div v-if="!isHidden('amount')" class="field" :style="elPos('amount')">
@@ -72,6 +72,11 @@ import { ref, computed, onMounted } from 'vue';
 const props = defineProps({ receipt: Object, templateUrl: String, layout: Object });
 
 const statusLabels = { pending: 'معلق', approved: 'معتمد', rejected: 'مرفوض', editing: 'تحت التعديل' };
+
+// اسم الطرف المقبوض منه — العميل إن وُجد، وإلا حساب الشجرة
+const counterpartyName = computed(() =>
+    props.receipt.client?.name || props.receipt.account?.name || '—'
+);
 const fmt = (v) => Number(v || 0).toLocaleString('en', { minimumFractionDigits: 3 });
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
 const paymentLabel = (m) => ({ cash: 'نقداً', bank: 'تحويل بنكي', check: 'شيك' }[m] || m);
@@ -103,9 +108,12 @@ const customFields = computed(() => {
 const replaceVars = (text) => {
     const r = props.receipt;
     const map = {
-        '{{اسم_العميل}}': r.client?.name || '',
-        '{{كود_العميل}}': r.client?.code || '',
+        // متغيرات العميل تبقى كما هي للقوالب المحفوظة، وترتد لاسم الحساب
+        '{{اسم_العميل}}': r.client?.name || r.account?.name || '',
+        '{{كود_العميل}}': r.client?.code || r.account?.code || '',
         '{{هاتف_العميل}}': r.client?.phone || '',
+        '{{اسم_الحساب}}': r.account?.name || r.client?.name || '',
+        '{{كود_الحساب}}': r.account?.code || '',
         '{{رقم_السند}}': r.receipt_number || '',
         '{{التاريخ}}': formatDate(r.receipt_date),
         '{{المبلغ}}': fmt(r.amount_jod) + ' JOD',

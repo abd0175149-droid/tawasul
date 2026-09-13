@@ -234,9 +234,23 @@ class AccountingService
      */
     public static function recordReceipt(Receipt $receipt): JournalEntry
     {
-        $clientAccount = $receipt->client->account_id
-            ? Account::find($receipt->client->account_id)
-            : self::account('1200');
+        // الحساب المستهدف: من الشجرة مباشرة، ثم حساب العميل، ثم ذمم العملاء
+        $targetAccount = $receipt->account_id
+            ? Account::findOrFail($receipt->account_id)
+            : ($receipt->client?->account_id
+                ? Account::findOrFail($receipt->client->account_id)
+                : self::account('1200'));
+
+        // حارس: لا يجوز أن يكون الطرف الدائن هو نفسه حساب القبض
+        // (قيد عبثي يُدخل ويُخرج من نفس الحساب دون أثر اقتصادي)
+        if (in_array($targetAccount->code, ['1101', '1102', '1103'], true)) {
+            throw new \Exception(
+                "لا يمكن إصدار سند قبض على حساب {$targetAccount->name} ({$targetAccount->code}) " .
+                "لأنه حساب قبض — استخدم قيد يومية للتحويل بين الصندوق والبنك."
+            );
+        }
+
+        $counterparty = $receipt->counterparty_name;
 
         $commission = (float) ($receipt->bank_commission ?? 0);
         $totalAmount = (float) $receipt->amount_jod;
@@ -253,7 +267,7 @@ class AccountingService
                 'account_id' => $bankAccount->id,
                 'debit' => round($totalAmount - $commission, 3),
                 'credit' => 0,
-                'description' => "تحصيل بنكي من {$receipt->client->name} (صافي بعد العمولة)",
+                'description' => "تحصيل بنكي من {$counterparty} (صافي بعد العمولة)",
             ];
 
             // مدين: مصاريف عمولات بنكية
@@ -270,20 +284,25 @@ class AccountingService
                 'account_id' => $paymentAccount->id,
                 'debit' => $totalAmount,
                 'credit' => 0,
-                'description' => "تحصيل من {$receipt->client->name}",
+                'description' => "تحصيل من {$counterparty}",
             ];
         }
 
-        // دائن: حساب العميل = المبلغ الكامل (كل المبلغ يخصم من ذمته)
+        // دائن: الحساب المستهدف بالمبلغ الكامل (العمولة لا تُنقص ذمة الطرف)
+        // الوصف يتبع طبيعة الحساب: الأصل ذمة تُسدَّد، وغيره قبض على الحساب
+        $creditLabel = $targetAccount->type === 'asset'
+            ? "تسديد ذمة {$counterparty}"
+            : "قبض على حساب {$counterparty}";
+
         $lines[] = [
-            'account_id' => $clientAccount->id,
+            'account_id' => $targetAccount->id,
             'debit' => 0,
             'credit' => $totalAmount,
-            'description' => "تسديد ذمة {$receipt->client->name}",
+            'description' => $creditLabel,
         ];
 
         return self::createEntry(
-            "سند قبض {$receipt->receipt_number} — {$receipt->client->name}",
+            "سند قبض {$receipt->receipt_number} — {$counterparty}",
             'receipt',
             $receipt->id,
             $lines

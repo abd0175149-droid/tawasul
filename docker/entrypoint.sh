@@ -31,6 +31,16 @@ if [ ! -f database/database.sqlite ]; then
     chown www-data:www-data database/database.sqlite
 fi
 
+# Restore migrations/seeders/factories shadowed by the database volume
+if [ -d /opt/app-database ]; then
+    echo "🔄 Syncing migrations/seeders from image into the database volume..."
+    for d in migrations seeders factories; do
+        [ -d "/opt/app-database/$d" ] || continue
+        mkdir -p "database/$d"
+        cp -rf "/opt/app-database/$d/." "database/$d/"
+    done
+fi
+
 # Fix permissions
 chown -R www-data:www-data storage bootstrap/cache database
 chmod -R 775 storage bootstrap/cache database

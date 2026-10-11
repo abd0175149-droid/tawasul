@@ -75,6 +75,13 @@ RUN mkdir -p \
     database \
     bootstrap/cache
 
+# ---- Stash database scaffolding outside the volume mount point ----
+# مجلد database/ كله يُركَّب volume عند التشغيل، فيحجب نسخة الصورة من
+# migrations و seeders و factories: الـvolume يُملأ مرة واحدة عند إنشائه
+# ثم لا تصله تحديثات الصورة أبداً. تُحفظ نسخة خارج مسار الـvolume
+# ويعيدها entrypoint عند كل إقلاع، وإلا لم يصل أي ترحيل جديد للإنتاج.
+RUN mkdir -p /opt/app-database     && cp -r database/migrations database/seeders database/factories /opt/app-database/
+
 # Create SQLite database if not exists
 RUN touch database/database.sqlite
 

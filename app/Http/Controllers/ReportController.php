@@ -8,11 +8,82 @@ use App\Models\Invoice;
 use App\Models\Disbursement;
 use App\Models\Receipt;
 use App\Models\LedgerEntry;
+use App\Services\TravelersReport;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+    /**
+     * صفحة «المسافرون بتاريخ» — الفواتير المعتمدة حسب تاريخ الرحلة.
+     */
+    public function tripDate(Request $request)
+    {
+        self::authorizeTripDate();
+
+        $filters = self::tripDateFilters($request);
+        $rows = TravelersReport::rows($filters);
+
+        return Inertia::render('Reports/TripDate', [
+            'title' => 'المسافرون بتاريخ',
+            'rows' => $rows,
+            'totals' => TravelersReport::summarise($rows),
+            'employees' => TravelersReport::invoiceCreators(),
+            'filters' => $filters,
+        ]);
+    }
+
+    /**
+     * مسافرو اليوم — JSON لبطاقة الرئيسية التي تجلب بياناتها بنفسها.
+     */
+    public function travelersToday()
+    {
+        self::authorizeTripDate();
+
+        $today = today()->toDateString();
+        $rows = TravelersReport::rowsForDate($today);
+
+        return response()->json([
+            'date' => $today,
+            'rows' => $rows,
+            'updated_at' => now()->format('H:i:s'),
+        ] + TravelersReport::summarise($rows));
+    }
+
+    /**
+     * التقرير يكشف هواتف العملاء وما عليهم من متبقٍّ، فيُفحص على الخادم
+     * لا في القائمة الجانبية وحدها.
+     */
+    private static function authorizeTripDate(): void
+    {
+        abort_unless(
+            auth()->user()?->can('reports.trip_date'),
+            403,
+            'لا تملك صلاحية عرض تقرير المسافرين.'
+        );
+    }
+
+    /** تطبيع مدخلات الفلترة — السلسلة الفارغة تعني «غير محدد». */
+    private static function tripDateFilters(Request $request): array
+    {
+        $mode = $request->input('mode', 'date');
+
+        if (!in_array($mode, ['date', 'upcoming', 'range', 'all'], true)) {
+            $mode = 'date';
+        }
+
+        $remaining = $request->input('remaining');
+
+        return [
+            'mode' => $mode,
+            'date' => $request->input('date') ?: today()->toDateString(),
+            'from' => $request->input('from') ?: today()->toDateString(),
+            'to' => $request->input('to') ?: today()->addMonth()->toDateString(),
+            'employee_id' => $request->input('employee_id') ?: null,
+            'remaining' => in_array($remaining, ['with', 'without'], true) ? $remaining : null,
+        ];
+    }
+
     public function agentsBalances(Request $request)
     {
         // الرصيد بالدينار من الحساب المحاسبي (نفس مصدر كشف حساب الوكيل) — لا الرصيد المبسّط بالريال

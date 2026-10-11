@@ -63,7 +63,9 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'client_phone' => 'nullable|string|max:20',
-            'trip_date' => 'nullable|date',
+            'trip_date' => 'required|date',
+            'return_date' => 'nullable|date|after_or_equal:trip_date',
+            'pax' => 'required|integer|min:1|max:999',
             'sell_price_jod' => 'required|numeric|min:0',
             'discount_jod' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
@@ -74,6 +76,12 @@ class InvoiceController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price_jod' => 'required|numeric|min:0',
             'items.*.service_id' => 'nullable|integer',
+        ], [
+            'trip_date.required' => 'تاريخ الرحلة مطلوب لحفظ الفاتورة.',
+            'trip_date.date' => 'تاريخ الرحلة غير صالح.',
+            'return_date.after_or_equal' => 'تاريخ العودة لا يسبق تاريخ الرحلة.',
+            'pax.required' => 'عدد المسافرين مطلوب.',
+            'pax.min' => 'عدد المسافرين لا يقل عن واحد.',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -95,7 +103,9 @@ class InvoiceController extends Controller
                 'invoice_number' => NumberingService::generate('INV'),
                 'client_id' => $validated['client_id'],
                 'client_phone' => $validated['client_phone'] ?? null,
-                'trip_date' => $validated['trip_date'] ?? null,
+                'trip_date' => $validated['trip_date'],
+                'return_date' => $validated['return_date'] ?? null,
+                'pax' => $validated['pax'],
                 'exchange_rate_snapshot' => $rate,
                 'total_cost_jod' => $totalCostJod,
                 'total_cost_sar' => $totalCostSar,
@@ -277,7 +287,9 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'client_phone' => 'nullable|string|max:20',
-            'trip_date' => 'nullable|date',
+            'trip_date' => 'required|date',
+            'return_date' => 'nullable|date|after_or_equal:trip_date',
+            'pax' => 'required|integer|min:1|max:999',
             'sell_price_jod' => 'required|numeric|min:0',
             'discount_jod' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
@@ -288,6 +300,12 @@ class InvoiceController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price_jod' => 'required|numeric|min:0',
             'items.*.service_id' => 'nullable|integer',
+        ], [
+            'trip_date.required' => 'تاريخ الرحلة مطلوب لحفظ الفاتورة.',
+            'trip_date.date' => 'تاريخ الرحلة غير صالح.',
+            'return_date.after_or_equal' => 'تاريخ العودة لا يسبق تاريخ الرحلة.',
+            'pax.required' => 'عدد المسافرين مطلوب.',
+            'pax.min' => 'عدد المسافرين لا يقل عن واحد.',
         ]);
 
         DB::transaction(function () use ($invoice, $validated) {
@@ -307,7 +325,9 @@ class InvoiceController extends Controller
             $invoice->update([
                 'client_id' => $validated['client_id'],
                 'client_phone' => $validated['client_phone'] ?? null,
-                'trip_date' => $validated['trip_date'] ?? null,
+                'trip_date' => $validated['trip_date'],
+                'return_date' => $validated['return_date'] ?? null,
+                'pax' => $validated['pax'],
                 'exchange_rate_snapshot' => $rate,
                 'total_cost_jod' => $totalCostJod,
                 'total_cost_sar' => $totalCostSar,

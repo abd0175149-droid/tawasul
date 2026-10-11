@@ -89,8 +89,27 @@
                             <input v-model="pos.client_phone" type="text" dir="ltr" placeholder="07XXXXXXXX" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"/>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الرحلة</label>
-                            <input v-model="pos.trip_date" type="date" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"/>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الرحلة *</label>
+                            <input v-model="pos.trip_date" type="date" required
+                                   class="w-full px-4 py-2.5 rounded-xl border text-sm"
+                                   :class="pos.trip_date ? 'border-gray-200' : 'border-red-400'"/>
+                            <p v-if="!pos.trip_date" class="mt-1 text-xs text-red-500">مطلوب لحفظ الفاتورة</p>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Return Date + Travellers -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ العودة</label>
+                            <input v-model="pos.return_date" type="date" :min="pos.trip_date || null"
+                                   class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">عدد المسافرين *</label>
+                            <input v-model.number="pos.pax" type="number" min="1" max="999" dir="ltr"
+                                   class="w-full px-4 py-2.5 rounded-xl border text-sm"
+                                   :class="pos.pax >= 1 ? 'border-gray-200' : 'border-red-400'"/>
+                            <p class="mt-1 text-xs text-gray-400">عدد الأفراد فعلياً — لا مجموع كميات البنود</p>
                         </div>
                     </div>
 
@@ -150,7 +169,7 @@
                     <!-- Notes + Submit -->
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">ملاحظات</label><textarea v-model="pos.notes" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-gold-500 focus:outline-none resize-none"></textarea></div>
                     <div class="flex gap-3">
-                        <button @click="submitPOS" :disabled="submitting||!pos.client_id||!pos.items.length||!allItemsHaveAgent" class="px-6 py-2.5 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-gold-500 to-gold-400 shadow-md disabled:opacity-50">{{ editingInvoiceId ? '📤 حفظ التعديلات' : '🧾 إرسال للاعتماد' }}</button>
+                        <button @click="submitPOS" :disabled="submitting||!pos.client_id||!pos.trip_date||!(pos.pax>=1)||!pos.items.length||!allItemsHaveAgent" class="px-6 py-2.5 rounded-xl font-bold text-sm text-black bg-gradient-to-r from-gold-500 to-gold-400 shadow-md disabled:opacity-50">{{ editingInvoiceId ? '📤 حفظ التعديلات' : '🧾 إرسال للاعتماد' }}</button>
                         <button @click="showPOS=false" class="px-6 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100">إلغاء</button>
                     </div>
                 </div>
@@ -222,6 +241,8 @@ const pos = reactive({
     client_id: '',
     client_phone: '',
     trip_date: '',
+    return_date: '',
+    pax: 1,
     sell_price_jod: 0,
     discount_jod: 0,
     notes: '',
@@ -255,6 +276,8 @@ const openPOS = async (inv = null) => {
             pos.client_id = data.client_id;
             pos.client_phone = data.client_phone || '';
             pos.trip_date = data.trip_date?.split('T')[0] || '';
+            pos.return_date = data.return_date?.split('T')[0] || '';
+            pos.pax = Number(data.pax) || 1;
             pos.sell_price_jod = parseFloat(data.total_sell_jod) || 0;
             pos.discount_jod = parseFloat(data.discount_jod) || 0;
             pos.notes = data.notes || '';
@@ -271,6 +294,8 @@ const openPOS = async (inv = null) => {
             pos.client_id = inv.client_id || '';
             pos.client_phone = '';
             pos.trip_date = '';
+        pos.return_date = '';
+        pos.pax = 1;
             pos.sell_price_jod = 0;
             pos.discount_jod = 0;
             pos.notes = '';
@@ -281,6 +306,8 @@ const openPOS = async (inv = null) => {
         pos.client_id = '';
         pos.client_phone = '';
         pos.trip_date = '';
+        pos.return_date = '';
+        pos.pax = 1;
         pos.sell_price_jod = 0;
         pos.discount_jod = 0;
         pos.notes = '';
@@ -307,6 +334,8 @@ const submitPOS = () => {
         client_id: pos.client_id,
         client_phone: pos.client_phone || null,
         trip_date: pos.trip_date || null,
+        return_date: pos.return_date || null,
+        pax: pos.pax || 1,
         sell_price_jod: pos.sell_price_jod || 0,
         discount_jod: pos.discount_jod || 0,
         notes: pos.notes,

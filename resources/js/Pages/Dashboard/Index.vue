@@ -37,6 +37,9 @@
                 </div>
             </div>
 
+            <!-- Travelers Today -->
+            <TravelersTodayCard v-if="can('reports.trip_date')" />
+
             <!-- Monthly Summary -->
             <div class="dash-card p-5">
                 <h4 class="font-bold text-sm text-gray-700 dark:text-gray-200 mb-4">📊 ملخص الشهر الحالي</h4>
@@ -109,6 +112,11 @@
 <script setup>
 import { ref, computed } from 'vue';
 import AppLayout from '@/Components/Layout/AppLayout.vue';
+import TravelersTodayCard from '@/Components/TravelersTodayCard.vue';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const can = (p) => page.props.auth?.isAdmin || (page.props.auth?.permissions || []).includes(p);
 
 const props = defineProps({ stats: Object, pending: Object, recentTransfers: Array, recentInvoices: Array, monthly: Object, chartData: Array, exchangeRate: Number });
 const showPending = ref(props.pending?.total > 0);

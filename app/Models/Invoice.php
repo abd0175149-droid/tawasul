@@ -13,7 +13,7 @@ class Invoice extends Model
     use SoftDeletes, HasApproval;
 
     protected $fillable = [
-        'invoice_number', 'client_id', 'client_phone', 'trip_date',
+        'invoice_number', 'client_id', 'client_phone', 'trip_date', 'return_date', 'pax',
         'agent_id', // legacy — الآن الوكلاء في البنود
         'exchange_rate_snapshot',
         'subtotal_sar', 'discount_sar', 'total_sar', 'total_jod',
@@ -41,6 +41,8 @@ class Invoice extends Model
         'profit_jod' => 'decimal:3',
         'invoice_date' => 'date',
         'trip_date' => 'date',
+        'return_date' => 'date',
+        'pax' => 'integer',
         'due_date' => 'date',
         'approved_at' => 'datetime',
         'modified_at' => 'datetime',

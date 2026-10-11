@@ -16,6 +16,11 @@
                 <CheckInWidget />
             </div>
 
+            <!-- Travelers Today -->
+            <div v-if="can('reports.trip_date')" class="mb-10">
+                <TravelersTodayCard />
+            </div>
+
             <!-- Sections Container -->
             <div class="space-y-12">
                 <div v-for="section in availableSections" :key="section.title">
@@ -75,6 +80,7 @@ import { computed } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import EmployeeLayout from '@/Components/Layout/EmployeeLayout.vue';
 import CheckInWidget from '@/Components/Attendance/CheckInWidget.vue';
+import TravelersTodayCard from '@/Components/TravelersTodayCard.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
@@ -125,6 +131,7 @@ const sections = [
     {
         title: '📊 النظام والتقارير',
         cards: [
+            { icon: '✈️', label: 'المسافرون بتاريخ', route: '/reports/trip-date', module: 'reports' },
             { icon: '📈', label: 'الملخص اليومي', route: '/reports/daily-summary', module: 'reports' },
             { icon: '📑', label: 'تقارير HR', route: '/hr/reports', module: 'hr_reports' },
             { icon: '👥', label: 'المستخدمين', route: '/users', module: 'users' },

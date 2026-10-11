@@ -87,6 +87,8 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/clients-balances', [\App\Http\Controllers\ReportController::class, 'clientsBalances'])->name('reports.clients-balances');
     Route::get('reports/profit-loss', fn () => redirect('/accounting/profit-loss'));
     Route::get('reports/daily-summary', [\App\Http\Controllers\ReportController::class, 'dailySummary'])->name('reports.daily-summary');
+    Route::get('reports/trip-date', [\App\Http\Controllers\ReportController::class, 'tripDate'])->name('reports.trip-date');
+    Route::get('api/travelers-today', [\App\Http\Controllers\ReportController::class, 'travelersToday'])->name('api.travelers-today');
 
     // Accounting
     Route::get('accounting/chart-of-accounts', [\App\Http\Controllers\AccountingController::class, 'chartOfAccounts'])->name('accounting.chart');

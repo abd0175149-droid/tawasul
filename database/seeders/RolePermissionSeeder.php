@@ -30,7 +30,7 @@ class RolePermissionSeeder extends Seeder
             'disbursements' => ['view', 'create', 'approve', 'reject'],
             'receipts' => ['view', 'create', 'approve', 'reject'],
             'invoices' => ['view', 'create', 'update', 'submit', 'approve', 'reject'],
-            'reports' => ['view'],
+            'reports' => ['view', 'trip_date'],
             'settings' => ['view', 'update'],
             'users' => ['view', 'create', 'update', 'delete'],
 
@@ -58,11 +58,17 @@ class RolePermissionSeeder extends Seeder
             'submit' => 'إرسال', 'manual_edit' => 'تعديل يدوي', 'generate' => 'توليد',
         ];
 
+        // أسماء صريحة لما لا يقرأ جيداً بقالب «إجراء + وحدة»
+        $explicitNames = [
+            'reports.trip_date' => 'متابعة مواعيد سفر العملاء',
+        ];
+
         $allPermissions = [];
         foreach ($modules as $module => $actions) {
             foreach ($actions as $action) {
                 $slug = "{$module}.{$action}";
-                $name = ($actionNames[$action] ?? $action) . ' ' . ($moduleNames[$module] ?? $module);
+                $name = $explicitNames[$slug]
+                    ?? (($actionNames[$action] ?? $action) . ' ' . ($moduleNames[$module] ?? $module));
                 $perm = Permission::updateOrCreate(
                     ['slug' => $slug],
                     [
@@ -80,7 +86,7 @@ class RolePermissionSeeder extends Seeder
             'disbursements.view', 'disbursements.create',
             'receipts.view', 'receipts.create',
             'invoices.view', 'invoices.create', 'invoices.update', 'invoices.submit',
-            'reports.view',
+            'reports.view', 'reports.trip_date',
         ];
 
         // صلاحيات المحاسب
@@ -88,7 +94,7 @@ class RolePermissionSeeder extends Seeder
             'agents.view', 'clients.view', 'services.view',
             'disbursements.view', 'disbursements.create',
             'receipts.view', 'receipts.create',
-            'reports.view',
+            'reports.view', 'reports.trip_date',
         ];
 
         // صلاحيات مدير الموارد البشرية
